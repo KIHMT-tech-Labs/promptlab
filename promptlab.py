@@ -6,7 +6,7 @@ import re
 import sys
 from pathlib import Path
 
-PLACEHOLDER_RE = re.compile(r"{{\s*([A-Za-z_][A-Za-z0-9_]*)\s*}}")
+PLACEHOLDER_RE = re.compile(r"{{\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*}}")
 ANY_PLACEHOLDER_RE = re.compile(r"{{(.*?)}}")
 DEFAULT_EXAMPLES = Path(__file__).parent / "examples"
 
@@ -106,8 +106,22 @@ def command_render(args: argparse.Namespace) -> int:
         if name in values:
             raise ValueError(f"variable supplied more than once: {name}")
         values[name] = value
-    print(render_template(template, values), end="")
-    if not template.endswith("\n"):
+    rendered = render_template(template, values)
+
+    if args.output:
+        output_path = Path(args.output)
+        if output_path.exists() and not args.force:
+            raise ValueError(f"refusing to overwrite existing file: {output_path} (use --force to replace it)")
+        try:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(rendered, encoding="utf-8")
+        except OSError as exc:
+            raise ValueError(f"could not write output file: {exc}") from exc
+        print(f"Rendered prompt saved to {output_path}")
+        return 0
+
+    print(rendered, end="")
+    if not rendered.endswith("\\n"):
         print()
     return 0
 
@@ -117,10 +131,10 @@ def command_init(args: argparse.Namespace) -> int:
     if path.exists():
         raise ValueError(f"refusing to overwrite existing path: {path}")
     content = (
-        "# New prompt\n\n"
-        "Describe the task and any constraints clearly.\n\n"
-        "## Context\n\n{{context}}\n\n"
-        "## Expected output\n\n{{expected_output}}\n"
+        "# New prompt\\n\\n"
+        "Describe the task and any constraints clearly.\\n\\n"
+        "## Context\\n\\n{{context}}\\n\\n"
+        "## Expected output\\n\\n{{expected_output}}\\n"
     )
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -149,8 +163,11 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser.add_argument("file", help="path to a Markdown prompt file")
     render_parser.add_argument("--var", action="append", default=[], metavar="NAME=VALUE",
                                help="set a placeholder value; may be repeated")
+    render_parser.add_argument("--output", "-o", metavar="PATH",
+                               help="save rendered prompt to a file instead of printing it")
+    render_parser.add_argument("--force", action="store_true",
+                               help="allow overwriting the output file (only with --output)")
     render_parser.set_defaults(func=command_render)
-
     init_parser = subparsers.add_parser("init", help="create a starter prompt file")
     init_parser.add_argument("path", help="new Markdown file path")
     init_parser.set_defaults(func=command_init)
