@@ -1,5 +1,7 @@
 # PromptLab
 
+[![PromptLab Tests](https://github.com/KIHMT-tech-Labs/promptlab/actions/workflows/tests.yml/badge.svg)](https://github.com/KIHMT-tech-Labs/promptlab/actions/workflows/tests.yml)
+
 A small, local-first toolkit for developers who work with AI prompts. Save reusable prompts as plain Markdown, check templates for common placeholder mistakes, and render a prompt with supplied values — without an API key or external service.
 
 PromptLab is intentionally provider-neutral: it helps with the prompt workflow, not with calling a particular model.
@@ -15,6 +17,12 @@ PromptLab is intentionally provider-neutral: it helps with the prompt workflow, 
 python promptlab.py list
 python promptlab.py check examples/code-review.md
 python promptlab.py render examples/code-review.md --var language=Python --var diff="def add(a, b): return a + b"
+
+# Save the rendered prompt to a file (will not overwrite an existing file)
+python promptlab.py render examples/code-review.md --var language=Python --var diff="def add(a, b): return a + b" --output rendered-review.md
+
+# Use --force only when you intentionally want to replace an existing output file
+python promptlab.py render examples/code-review.md --var language=Python --var diff="def add(a, b): return a + b" --output rendered-review.md --force
 ```
 
 ## Commands
@@ -22,6 +30,7 @@ python promptlab.py render examples/code-review.md --var language=Python --var d
 - `list [directory]` lists Markdown prompt files (defaults to the bundled examples).
 - `check FILE` reports placeholders and basic template issues.
 - `render FILE --var name=value` substitutes provided values and prints the result.
+- `render FILE --var name=value --output PATH` saves the rendered prompt to a file; existing files are protected unless you explicitly pass `--force`.
 - `init PATH` creates a starter prompt file without overwriting an existing file.
 
 See `python promptlab.py --help` for details.
