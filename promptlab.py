@@ -6,7 +6,7 @@ import re
 import sys
 from pathlib import Path
 
-PLACEHOLDER_RE = re.compile(r"{{\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*}}")
+PLACEHOLDER_RE = re.compile(r"{{\s*([A-Za-z_][A-Za-z0-9_]*)\s*}}")
 ANY_PLACEHOLDER_RE = re.compile(r"{{(.*?)}}")
 DEFAULT_EXAMPLES = Path(__file__).parent / "examples"
 
