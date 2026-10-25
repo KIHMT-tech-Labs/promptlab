@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from promptlab import (
+    build_parser,
     inspect_template,
     list_prompts,
     parse_var,
@@ -48,6 +49,22 @@ class PromptLabTests(unittest.TestCase):
             (root / "nested").mkdir()
             (root / "nested" / "two.md").write_text("two", encoding="utf-8")
             self.assertEqual(len(list_prompts(root)), 2)
+
+    def test_render_output_option_is_available(self):
+        parser = build_parser()
+        args = parser.parse_args([
+            "render", "prompt.md", "--var", "name=world", "--output", "rendered.md"
+        ])
+        self.assertEqual(args.output, "rendered.md")
+        self.assertFalse(args.force)
+
+    def test_render_force_option_is_available(self):
+        parser = build_parser()
+        args = parser.parse_args([
+            "render", "prompt.md", "--var", "name=world", "-o", "rendered.md", "--force"
+        ])
+        self.assertEqual(args.output, "rendered.md")
+        self.assertTrue(args.force)
 
 
 if __name__ == "__main__":
